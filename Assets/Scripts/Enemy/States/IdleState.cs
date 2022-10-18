@@ -24,6 +24,7 @@ namespace Enemy
         public override void LogicUpdate()
         {
             base.LogicUpdate();
+            enemy.SetWalkState();
         }
 
         public override void PhysicsUpdate()

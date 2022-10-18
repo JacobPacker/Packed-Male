@@ -4,46 +4,45 @@ using System.Collections.Specialized;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.VFX;
+using UnityEngine.AI;
 
 namespace Enemy
 {
     public class EnemyScript : MonoBehaviour
     {
-        public Rigidbody rb;
-        Collider col;
         UnityEngine.AI.NavMeshAgent agent;
-
-        public bool onPlatform;
-
-        public float xv, yv;
 
         // variables holding the different player states
         public IdleState idleState;
+        public WalkState walkState;
+        public RunState runState;
 
         public StateMachine sm;
 
-        public float inputMagnitude;
+        public GameObject player;
+        private NavMeshAgent nav;
 
-        private void Awake()
-        {
+        public float detecRange;
 
-        }
+        public AudioClip[] screams;
+        public AudioSource source;
 
+        [HideInInspector]
+        public int destPoint;
         // Start is called before the first frame update
         void Start()
         {
-            rb = GetComponent<Rigidbody>();
-            col = gameObject.AddComponent<Collider>();
-
             sm = gameObject.AddComponent<StateMachine>();
 
             // add new states here
             idleState = new IdleState(this, sm);
-
+            walkState = new WalkState(this, sm);
+            runState = new RunState(this, sm);
 
             // initialise the statemachine with the default state
             sm.Init(idleState);
-
+            nav = GetComponent<NavMeshAgent>();
+            source = GetComponent<AudioSource>();
         }
 
         // Update is called once per frame
@@ -56,24 +55,41 @@ namespace Enemy
         void FixedUpdate()
         {
             sm.CurrentState.PhysicsUpdate();
-            rb.velocity = new Vector2(xv, yv);
         }
 
         public void SetIdleState()
         {
-            GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 0;
+            if (!nav.pathPending && nav.remainingDistance > detecRange)
+            {
+                sm.ChangeState(idleState);
+                GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 0;
+            }
+            
         }
 
         public void SetWalkState()
         {
-            GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 4;
+            if (!nav.pathPending && nav.remainingDistance < detecRange)
+            {
+                sm.ChangeState(walkState);
+                GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 4;
+                //nav.destination = player[destPoint].position;
 
+                source.clip = screams[Random.Range(0, screams.Length)];
+                source.Play();
+            }
         }
 
         public void SetRunState()
         {
-            GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 10;
+            if (!nav.pathPending && nav.remainingDistance < 5)
+            {
+                sm.ChangeState(runState);
+                GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 8;
 
+                source.clip = screams[Random.Range(0, screams.Length)];
+                source.Play();
+            }
         }
     }
 
