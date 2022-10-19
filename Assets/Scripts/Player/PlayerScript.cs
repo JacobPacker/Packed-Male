@@ -115,4 +115,13 @@ public class PlayerScript : MonoBehaviour
     {
         readyToJump = true;
     }
+
+    void OnCollisionEnter(Collision col)
+    {
+        if (col.gameObject.tag == "Enemy")
+        {
+            Destroy(gameObject);
+            Application.Quit();
+        }
+    }
 }

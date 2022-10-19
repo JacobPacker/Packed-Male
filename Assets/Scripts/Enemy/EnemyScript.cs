@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.VFX;
 using UnityEngine.AI;
@@ -20,6 +19,9 @@ namespace Enemy
         public StateMachine sm;
 
         public GameObject player;
+        public GameObject defender;
+        public float distance;
+
         private NavMeshAgent nav;
 
         public float detecRange;
@@ -29,10 +31,13 @@ namespace Enemy
 
         [HideInInspector]
         public int destPoint;
+
         // Start is called before the first frame update
         void Start()
         {
             sm = gameObject.AddComponent<StateMachine>();
+            nav = GetComponent<NavMeshAgent>();
+            source = GetComponent<AudioSource>();
 
             // add new states here
             idleState = new IdleState(this, sm);
@@ -41,8 +46,6 @@ namespace Enemy
 
             // initialise the statemachine with the default state
             sm.Init(idleState);
-            nav = GetComponent<NavMeshAgent>();
-            source = GetComponent<AudioSource>();
         }
 
         // Update is called once per frame
@@ -55,40 +58,49 @@ namespace Enemy
         void FixedUpdate()
         {
             sm.CurrentState.PhysicsUpdate();
+            distance = Vector3.Distance(player.transform.position, defender.transform.position);
         }
 
         public void SetIdleState()
         {
-            if (!nav.pathPending && nav.remainingDistance > detecRange)
+
+            if (!nav.pathPending && distance > detecRange)
             {
-                sm.ChangeState(idleState);
                 GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 0;
+
+                sm.ChangeState(idleState);
             }
             
         }
 
         public void SetWalkState()
         {
-            if (!nav.pathPending && nav.remainingDistance < detecRange)
+
+            if (!nav.pathPending && distance <= detecRange && distance >= 15)
             {
-                sm.ChangeState(walkState);
                 GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 4;
-                //nav.destination = player[destPoint].position;
+
+                nav.destination = player.transform.position;
 
                 source.clip = screams[Random.Range(0, screams.Length)];
                 source.Play();
+
+                sm.ChangeState(walkState);
             }
         }
 
         public void SetRunState()
         {
-            if (!nav.pathPending && nav.remainingDistance < 5)
+            if (!nav.pathPending && distance < 15)
             {
-                sm.ChangeState(runState);
                 GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 8;
+
+                nav.destination = player.transform.position;
 
                 source.clip = screams[Random.Range(0, screams.Length)];
                 source.Play();
+
+                sm.ChangeState(runState);
             }
         }
     }

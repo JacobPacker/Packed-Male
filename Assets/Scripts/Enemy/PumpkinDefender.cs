@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class PelletDefender : MonoBehaviour
+
+public class PumpkinDefender : MonoBehaviour
 {
     public Transform[] points;
-    
+
     public GameObject player;
     public GameObject defender;
     public float distance;
 
     public float detecDis;
 
-    //public Animator anim;
+    public Animator anim;
 
     private NavMeshAgent nav;
     [HideInInspector]
@@ -26,7 +27,7 @@ public class PelletDefender : MonoBehaviour
     {
         nav = GetComponent<NavMeshAgent>();
         source = GetComponent<AudioSource>();
-        //anim = GetComponent<Animator>();
+        anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -62,16 +63,16 @@ public class PelletDefender : MonoBehaviour
     }
     void FollowPlayer()
     {
-        source.clip = screams[Random.Range(0, screams.Length)];
-        source.Play();
-
         nav.destination = player.transform.position;
         print(nav.destination);
     }
     void AttackPlayer()
     {
-        GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 10;
+        source.clip = screams[Random.Range(0, screams.Length)];
+        source.Play();
 
-        //anim.SetBool("Run", true);
+        GetComponent<UnityEngine.AI.NavMeshAgent>().speed = 15;
+
+        anim.SetBool("Run", true);
     }
 }

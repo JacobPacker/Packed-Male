@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PelletScript : MonoBehaviour
 {
-    public AudioSource audio;
+    public new AudioSource audio;
 
     void OnCollisionEnter(Collision col)
     {
